@@ -3,6 +3,7 @@ package bitcoin
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/bitcoinsv/bsvd/bsvec"
@@ -168,6 +169,7 @@ func CreateTx(utxos []*Utxo, addresses []*PayToAddress,
 	// Loop all utxos and add to the transaction
 	var err error
 	for _, utxo := range utxos {
+		log.Println("Script pub key", utxo.ScriptPubKey)
 		if err = tx.From(utxo.TxID, utxo.Vout, utxo.ScriptPubKey, utxo.Satoshis); err != nil {
 			return nil, err
 		}
@@ -208,6 +210,12 @@ func CreateTx(utxos []*Utxo, addresses []*PayToAddress,
 			return nil, err
 		}
 	}
+	asm, err := tx.Inputs[0].UnlockingScript.ToASM()
+	if err != nil {
+		log.Printf("asm err %s", err)
+		return nil, err
+	}
+	log.Printf("Made a tx %x", asm)
 
 	// Return the transaction as a raw string
 	return tx, nil
